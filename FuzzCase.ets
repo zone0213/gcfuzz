@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { hilog } from '@kit.PerformanceAnalysisKit';
 interface ArkTsIndexAccess {
     loadField(index: number): Object | null;
