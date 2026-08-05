@@ -82,7 +82,7 @@ function tryGc(): void {
     pressureSink = new Array<Object | null>(GC_PRESSURE).fill(null);
 }
 
-function alloc(block: () => Object | null): Object | null {
+function alloc(block: () => ArkTsIndexAccess | null): ArkTsIndexAccess | null {
     if (shouldTerminate()) { return null; }
     return block();
 }
