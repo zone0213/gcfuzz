@@ -1,255 +1,30 @@
-import os
-import sys
-import subprocess
-import time
-import pandas as pd
-import json
-import re
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from xdevice.__main__ import main_process
-from aw.common.CommonUtils import CommonUtils
-
-'''
-将测试结果会总在一起
-不进行数据采集
-不进行重启、等待
-'''
-
-APP_TEST_CASE_SET_FILE_NAME = os.path.join(
-    CommonUtils.get_jsonpath(), 'testCaseList.xlsx'
-)
-
-# 【修改点 1】增加调试打印，确保你一眼就能看到脚本到底在读哪个 Excel 文件
-print("="*50)
-print(f"DEBUG: 正在读取的测试列表文件: {os.path.abspath(APP_TEST_CASE_SET_FILE_NAME)}")
-print("="*50)
-
-case_infos_file = os.path.join(CommonUtils.get_jsonpath(), "testCaseList.json")
-
-
-def parse_test_case_list_xlsx(name, sheet="Sheet1"):
-    df = pd.read_excel(name, sheet)
-    df = df.fillna('')  # 处理nan数据
-    # 获取excel表格中的第一行的数据，作为字典的key==》生成一个list列表
-    title = df.keys()
-    # 作为每个字典的容器
-    test_case_temp = []
-    # 遍历第一行意外的所有行
-    for data in df.values:
-        # 把遍历的每行数据与第一行title数据打包成字典
-        dir_line = dict(zip(title, data))
-        test_case_temp.append(dir_line)
-    return test_case_temp
-
-
-def change_json(jsonPath, key, flag):
-    if os.path.exists(jsonPath):
-        with open(jsonPath, 'rb') as f:
-            # json对象获取
-            loads = json.loads(f.read())
-            loads[key] = flag
-    else:
-        loads = {}
-        loads[key] = flag
-    with open(jsonPath, 'w') as f:
-        json.dump(loads, f, indent=4, ensure_ascii=False)
-
-
-def _get_test_device_sn():
-    cmd = "hdc list targets"
-    output = (
-        subprocess.run(cmd, capture_output=True, text=True).stdout.strip().split('\n')
-    )
-    return output
-
-
-class Test:
-    '''
-    sn: 需要测试的sn
-    root_path： 测试报告跟目录
-    loops: 测试轮次
-    '''
-
-    def __init__(self, sn, root_path, loops):
-        self.testsuite = {}
-        self.test_mode = []
-        self.device_sn = sn
-        self.root_path = root_path
-        self.loops = loops
-
-    def init_test_mode(self):
-        '''
-        测试模式：
-        "NORMAL": 默认，正常测试
-        "DEBUG": 去掉重启手机、以及等待时间
-        "NO_DATA": 纯用例测试，不包含抓取数据
-        '''
-        test_mode = os.getenv("TEST_MODE")
-        if not test_mode:
-            self.test_mode = ["NORMAL"]
-        else:
-            self.test_mode = test_mode.split(",")
-
-    def is_debug_mode(self):
-        return "DEBUG" in self.test_mode
-
-    def is_no_data_mode(self):
-        return "NO_DATA" in self.test_mode
-
-    def check_app_version(self, package_name, expect_app_version, app_name):
-        '''
-        检查app版本
-        '''
-
-        result = True
-
-        def rematch(info):
-            matches = re.findall(r"'(.*?)'", str(info))
-            matches2 = re.findall(r'"(.*?)"', str(info))
-            if matches:
-                return matches[0]
-            if matches2:
-                return matches2[0]
-
-        app_version_check = CommonUtils.get_json("ResourceCase.json")[
-            "app_version_check"
-        ]
-
-        if not app_version_check:
-            print("app_version_check is false")
-            return result
-
-        cur_app_version = (
-            str(
-                CommonUtils.exe_cmd(
-                    'hdc -t {0} shell bm dump -n {1} | grep versionName | tail -n 1'.format(
-                        self.device_sn, package_name
-                    )
-                )
-            )
-            .split(':')[-1]
-            .strip()
-        )
-        cur_app_version = rematch(cur_app_version)
-
-        if cur_app_version != expect_app_version:
-            error_msg = f"{app_name}-{package_name} 测试的app_version不正确, 当前版本：{cur_app_version}， 期待版本：{expect_app_version}"
-            print(error_msg)
-            result = False
-
-        return result
-
-    def parse_cases(self):
-        '''
-        将每个app的用例放在一起
-        '''
-        # 获取测试用例信息
-        test_case_infos = parse_test_case_list_xlsx(APP_TEST_CASE_SET_FILE_NAME)
-        testsuite = {}
-
-        for case in test_case_infos:
-            package_name = case['package_name']
-            if case["RUN"] == "Y":
-                if package_name not in testsuite:
-                    testsuite[package_name] = []
-                # 按照测试package进行存储
-                testsuite[package_name].append(case)
-        self.testsuite = testsuite
-
-        # 获取app_info数据
-        test_case_infos = parse_test_case_list_xlsx(
-            APP_TEST_CASE_SET_FILE_NAME, 'app_info'
-        )
-
-        # 会写入到json文件中，不要包含中文
-        app_infos = {}
-        app_names = {}
-        for case in test_case_infos:
-            package_name = case['package_name']
-            app_version = str(case['app_version'])
-            app_name = str(case['app_name'])
-            if package_name not in app_infos:
-                app_infos[package_name] = [app_version]
-            if package_name not in app_names:
-                app_names[package_name] = app_name
-        self.app_infos = app_infos
-
-        exit_flag = False
-        for package in self.testsuite.keys():
-            expect_version = app_infos[package][0]
-            app_name = app_names[package]
-            if not self.check_app_version(package, expect_version, app_name):
-                exit_flag = True
-
-        # 存储到ResourceCase.json
-        change_json(case_infos_file, 'app_infos', app_infos)
-
-        if exit_flag:
-            exit(1)
-
-    def reboot_device(self):
-        if self.is_debug_mode():
-            return
-        os.system(rf'hdc -t {self.device_sn} shell reboot')
-        while True:
-            output = _get_test_device_sn()
-            if output == '' or self.device_sn not in output:
-                time.sleep(1)
-                print("开机中，正在等待完全开机.....")
-                continue
-            elif self.device_sn in _get_test_device_sn():
-                time.sleep(30)  # 检测到sn号，其实还未完全开机
-                break
-            else:
-                continue
-
-    def runtest(self):
-        case_list = []
-        for _, test_case_info in self.testsuite.items():
-            for case in test_case_info:
-                test_name = case['test_name']
-                has_trace = False
-                if case['RUN'] != 'Y':
-                    continue
-                case_list.append(test_name)
-
-        case_list = ";".join(case_list)
-        task_id = CommonUtils.get_timestamp()
-        output = os.path.join(self.root_path, "reports", task_id, "all")
-
-        # 【修改点 2】在这里增加了 -ta 参数，强制让 xdevice 连接当前变量 self.device_sn
-        # 防止它去读取 user_config.xml 里的错误 SN 或扫描出错误的设备
-        main_process(f"run -l {case_list} -rp {output} --repeat {self.loops} -ta {self.device_sn}")
-
-
-if __name__ == '__main__':
-    sn = CommonUtils.get_sn()
-    # 打印一下获取到的 SN，确保没抓错
-    print(f"DEBUG: 当前检测到的手机 SN 为: {sn}")
-
-    if sn not in _get_test_device_sn():
-        print(f"未找到设备: {sn}")
-        exit(1)
-
-    # 测试模式
-    # DEBUG: 用例里面不做重启和等待
-    # NO_DATA: 表是不做数据采集
-    os.environ["TEST_MODE"] = "DEBUG,NO_DATA"
-
-    # 测试轮次
-    loops = 1
-    # 是否做看板任务上传(True/False)
-    # 是否检查app版本
-    app_version_check = False
-    CommonUtils.change_json("ResourceCase.json", 'CPU', False)
-    CommonUtils.change_json("ResourceCase.json", 'MEMINFO', True)
-    # 是否做任务上传
-    CommonUtils.change_json("ResourceCase.json", 'upload', False)
-    CommonUtils.change_json("ResourceCase.json", 'app_version_check', app_version_check)
-
-    this_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    test = Test(sn, this_path, loops)
-    test.init_test_mode()
-    test.parse_cases()
+8RC9K26613000662
+(.venv) PS D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new> dir env: | findstr "FMR0224618006231"
+(.venv) PS D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new>  python .\catch_app_mem_info_debug.py                                                                              
+==================================================
+DEBUG: 正在读取的测试列表文件: D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\config\testCaseList.xlsx
+==================================================
+DEBUG: 当前检测到的手机 SN 为: 8RC9K26613000662
+app_version_check is false
+[2026-08-06 15:39:13,330] [13280] [Main] [INFO] [*************** xDevice Test Framework 7.0.2.10 Starting ***************]
+[2026-08-06 15:39:13,330] [13280] [HypiumPlugins] [INFO] [Start Load hypium plugins]
+[2026-08-06 15:39:13,331] [13280] [HypiumBasic] [INFO] [register task call finished]
+[2026-08-06 15:39:13,331] [13280] [HypiumPlugins] [INFO] [Load hypium plugins finished]
+Traceback (most recent call last):
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\catch_app_mem_info_debug.py", line 255, in <module>
     test.runtest()
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\catch_app_mem_info_debug.py", line 223, in runtest
+    main_process(f"run -l {case_list} -rp {output} --repeat {self.loops} -ta {self.device_sn}")
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\.venv\Lib\site-packages\xdevice\__main__.py", line 56, in main_process
+    console.console(args)
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\.venv\Lib\site-packages\xdevice\_core\command\console.py", line 122, in console
+    argument = self.argument_parser(para_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\.venv\Lib\site-packages\xdevice\_core\command\console.py", line 427, in argument_parser
+    self._params_post_processing(options)
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\.venv\Lib\site-packages\xdevice\_core\command\console.py", line 463, in _params_post_processing
+    self._update_task_args(options)
+  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\.venv\Lib\site-packages\xdevice\_core\command\console.py", line 722, in _update_task_args
+    args.update({arg[0].strip(): arg[1].strip()})
+                                 ~~~^^^
+IndexError: list index out of range
