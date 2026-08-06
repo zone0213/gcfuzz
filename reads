@@ -1,4 +1,5 @@
-> hvigor Finished :entry:default@CacheNativeLibs... after 7 ms 
+> hvigor Finished :entry:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :entry:default@CacheNativeLibs...  
 > hvigor ERROR: Failed :entry:default@CompileArkTS... 
 > hvigor WARN: 
 1 WARN: ArkTS:WARN: For details about ArkTS syntax errors, see FAQs
@@ -6,207 +7,181 @@
 1 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:146:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:148:21
 
 
 2 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:148:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:150:21
 
 
 3 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:149:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:202:21
 
 
 4 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:151:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:204:21
 
 
 5 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:152:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:233:21
 
 
 6 ERROR: 10605999 ArkTS Compiler Error
 Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
   The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:153:21
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:247:5
 
 
 7 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:154:21
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:256:47
 
 
 8 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:155:21
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:268:77
 
 
 9 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:156:22
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:272:91
 
 
 10 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:157:22
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:276:65
 
 
 11 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:158:22
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:293:95
 
 
 12 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:200:21
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:294:77
 
 
 13 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:201:21
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:295:95
 
 
 14 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:202:21
+Error Message: Argument of type 'null' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:308:93
 
 
-15 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:203:21
+15 ERROR: 10605030 ArkTS Compiler Error
+Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:247:5
 
 
-16 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:230:21
+16 ERROR: 10605030 ArkTS Compiler Error
+Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:251:23
 
 
-17 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null' is not assignable to type 'ArkTsIndexAccess | null'.
-  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:231:21
+17 ERROR: 10605030 ArkTS Compiler Error
+Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:265:83
 
 
-18 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'loadField' in type 'ArkTsArrayBox' is not assignable to the same property in base type 'ArkTsIndexAccess'.
-  Type '(index: number) => Object' is not assignable to type '(index: number) => ArkTsIndexAccess'.
-    The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-      Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:14:5
+18 ERROR: 10605030 ArkTS Compiler Error
+Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:284:72
 
 
 19 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:146:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:148:21
 
 
 20 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:148:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:150:21
 
 
 21 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:149:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:202:21
 
 
 22 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:151:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:204:21
 
 
 23 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:152:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:233:21
 
 
 24 ERROR: 10505001 ArkTS Compiler Error
 Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:153:21
+  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:247:5
 
 
 25 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:154:21
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:248:75
 
 
 26 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:155:21
+Error Message: Argument of type 'Object' is not assignable to parameter of type 'WeakRef<Object>'.
+  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
+    Type 'Object' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:250:71
 
 
 27 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:156:22
+Error Message: Argument of type 'Object' is not assignable to parameter of type 'ArkTsIndexAccess'.
+  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:251:23
 
 
 28 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:157:22
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'number'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:252:77
 
 
 29 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:158:22
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:254:71
 
 
 30 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:200:21
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:258:71
 
 
 31 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:201:21
+Error Message: Argument of type 'Object' is not assignable to parameter of type 'WeakRef<Object>'.
+  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
+    Type 'Object' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:265:71
 
 
 32 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:202:21
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:278:77
 
 
 33 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:203:21
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:283:72
 
 
 34 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:230:21
+Error Message: Argument of type 'Object' is not assignable to parameter of type 'ArkTsIndexAccess'.
+  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
+    Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:284:72
 
 
 35 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:231:21
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:287:72
 
 
 36 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'loadField' does not exist on type 'Object'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:296:14
+Error Message: Argument of type 'ArkTsIndexAccess' is not assignable to parameter of type 'WeakRef<Object>'.
+  Type 'ArkTsIndexAccess' is missing the following properties from type 'WeakRef<Object>': deref, [Symbol.toStringTag] At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:303:71
 
 
-37 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:302:5
-
-
-COMPILE RESULT:FAIL {ERROR:38 WARN:1}
+COMPILE RESULT:FAIL {ERROR:37 WARN:1}
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -226,5 +201,4 @@ Execution failed for task 'default@CompileArkTS'.
 > Run with --debug option to get more log output.
 
 ================================================================================
-> hvigor ERROR: BUILD FAILED in 6 s 67 ms 
-
+> hvigor ERROR: BUILD FAILED in 1 s 421 ms
