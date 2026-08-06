@@ -1,74 +1,17 @@
-> hvigor Finished :entry:default@CacheNativeLibs... after 8 ms 
+> hvigor Finished :entry:default@CacheNativeLibs... after 31 ms 
 > hvigor ERROR: Failed :entry:default@CompileArkTS... 
 > hvigor WARN: 
 1 WARN: ArkTS:WARN: For details about ArkTS syntax errors, see FAQs
 > hvigor ERROR: ArkTS Compiler Error
-1 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Argument of type 'Object | null | undefined' is not assignable to parameter of type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:250:77
+1 ERROR: 10605030 ArkTS Compiler Error
+Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:281:5
 
 
-2 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Argument of type 'Object | null | undefined' is not assignable to parameter of type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:256:75
+2 ERROR: 10605146 ArkTS Compiler Error
+Error Message: Switching off type checks with in-place comments is not allowed (arkts-strict-typing-required) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:1:1
 
 
-3 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null | undefined' is not assignable to type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:271:5
-
-
-4 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Argument of type 'Object | null | undefined' is not assignable to parameter of type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:277:71
-
-
-5 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null | undefined' is not assignable to type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:279:5
-
-
-6 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Type 'Object | null | undefined' is not assignable to type 'ArkTsIndexAccess | null'.
-  Type 'undefined' is not assignable to type 'ArkTsIndexAccess | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:280:5
-
-
-7 ERROR: 10605999 ArkTS Compiler Error
-Error Message: Argument of type 'Object | null | undefined' is not assignable to parameter of type 'Object | null'.
-  Type 'undefined' is not assignable to type 'Object | null'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:285:72
-
-
-8 ERROR: 10605030 ArkTS Compiler Error
-Error Message: Structural typing is not supported (arkts-no-structural-typing) At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:280:5
-
-
-9 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:280:5
-
-
-10 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'loadField' does not exist on type 'Object'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:283:24
-
-
-11 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'storeField' does not exist on type 'Object'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:294:31
-
-
-12 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'loadField' does not exist on type 'Object'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:296:14
-
-
-13 ERROR: 10505001 ArkTS Compiler Error
-Error Message: Property 'storeField' does not exist on type 'Object'. At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:297:31
-
-
-14 ERROR: 10505001 ArkTS Compiler Error
-Error Message: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
-  Type 'Object' is missing the following properties from type 'ArkTsIndexAccess': loadField, storeField At File: D:/project/deveco-runner/entry/src/main/ets/gcfuzz/FuzzCase.ets:302:5
-
-
-COMPILE RESULT:FAIL {ERROR:15 WARN:1}
+COMPILE RESULT:FAIL {ERROR:3 WARN:1}
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -88,4 +31,6 @@ Execution failed for task 'default@CompileArkTS'.
 > Run with --debug option to get more log output.
 
 ================================================================================
-> hvigor ERROR: BUILD FAILED in 6 s 188 ms
+> hvigor ERROR: BUILD FAILED in 6 s 81 ms 
+
+进程已结束，退出代码为 -1
