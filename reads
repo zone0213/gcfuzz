@@ -1,24 +1,2 @@
-if __name__ == '__main__':
-    # 1. 屏蔽 ADB，解决 10061 拒绝连接报错
-    os.environ["XDEVICE_ADB_SERVER_FORBIDDEN"] = "true"
-
-    # 2. 直接获取当前真正连上的手机号，不读 user_config.xml
-    try:
-        output = subprocess.run("hdc list targets", capture_output=True, text=True).stdout.strip().split('\n')
-        # 过滤掉空的和 [Empty] 字样，拿到第一行
-        sn_list = [s.strip() for s in output if s.strip() and "[Empty]" not in s]
-        sn = sn_list[0].split()[0] # 拿到 8RC9K...
-    except Exception as e:
-        print("未检测到任何 HDC 设备，请检查连线！")
-        exit(1)
-
-    print(f"成功识别手机 SN: {sn}")
-
-    # ... 中间的 change_json 保持不变 ...
-    
-    # 3. 创建测试对象并运行
-    this_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    test = Test(sn, this_path, 1) # 这里传入的 sn 就是 self.device_sn
-    test.init_test_mode()
-    test.parse_cases()
-    test.runtest()
+# 注意：前面的点和反斜杠不能少
+& ".\.venv\Scripts\Activate.ps1"
