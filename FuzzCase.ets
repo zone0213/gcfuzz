@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { hilog } from '@kit.PerformanceAnalysisKit';
 interface ArkTsIndexAccess {
-    loadField(index: number): Object | null;
+    loadField(index: number): ArkTsIndexAccess | null;
     storeField(index: number, value: Object | null): void;
 }
 
@@ -142,13 +141,13 @@ class Class0 implements ArkTsIndexAccess{
     f11: Object | null = null
     f12: Object | null = null
     f13: number = anyToInt(null)
-    loadField(index: number): Object | null{
+    loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 14){
             case 0: return this.f0?.deref() ?? null;
-            case 1: return this.f1;
+            case 1: return null;
             case 2: return this.f2?.deref() ?? null;
             case 3: return this.f3;
-            case 4: return this.f4;
+            case 4: return null;
             case 5: return this.f5;
             case 6: return this.f6;
             case 7: return this.f7;
@@ -157,7 +156,7 @@ class Class0 implements ArkTsIndexAccess{
             case 10: return this.f10;
             case 11: return this.f11;
             case 12: return this.f12;
-            case 13: return this.f13;
+            case 13: return null;
             default: return null;
         }
     }
@@ -196,13 +195,13 @@ class Class1 implements ArkTsIndexAccess{
     f2: WeakRef<Object> | null = null
     f3: Object | null = null
     f4: number = anyToInt(null)
-    loadField(index: number): Object | null{
+    loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 5){
             case 0: return this.f0?.deref() ?? null;
             case 1: return this.f1;
             case 2: return this.f2?.deref() ?? null;
             case 3: return this.f3;
-            case 4: return this.f4;
+            case 4: return null;
             default: return null;
         }
     }
@@ -226,7 +225,7 @@ class Class2 implements ArkTsIndexAccess{
     }
     f0: Object | null = null
     f1: WeakRef<Object> | null = null
-    loadField(index: number): Object | null{
+    loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 2){
             case 0: return this.f0;
             case 1: return this.f1?.deref() ?? null;
@@ -248,13 +247,13 @@ function fun0(l0: Object | null, l1: Object | null, l2: Object | null): Object |
     g1 = g1
     let l4: ArkTsIndexAccess | null = alloc(() => { return new Class0(l2, null, null, null, null, null, null, null, null, null, null, null, null, null); })
     l3?.storeField(1, l0)
-    let l5: ArkTsIndexAccess | null = alloc(() => { return new Class0(null, l4?.loadField(4), null, null, null, null, null, null, null, null, null, null, null, null); })
+    let l5: ArkTsIndexAccess | null = alloc(() => { return new Class0(null, l4?.loadField(4) ?? null, null, null, null, null, null, null, null, null, null, null, null, null); })
     tryGc()
     let l6: ArkTsIndexAccess | null = alloc(() => { return new Class0(g1, null, null, null, null, null, null, null, null, null, null, null, null, null); })
     for (let i = 0; i < 64; i++){
         alloc(() => { return new Class0(null, null, null, null, null, null, null, null, null, null, null, null, null, null); })
     }
-    let l7: ArkTsIndexAccess | null = alloc(() => { return new Class0(g0, l4?.loadField(5), null, null, null, null, null, null, null, null, null, null, null, null); })
+    let l7: ArkTsIndexAccess | null = alloc(() => { return new Class0(g0, l4?.loadField(5) ?? null, null, null, null, null, null, null, null, null, null, null, null, null); })
     g0 = g0
     return null
 }
@@ -269,21 +268,21 @@ function fun1(l0: Object | null, l1: Object | null): Object | null{
     g0
     tryGc()
     let l6: ArkTsIndexAccess | null = alloc(() => { return new Class1(null, l4, null, l4, null); })
-    g1 = l4?.loadField(10)
+    g1 = l4?.loadField(10) ?? null
     tryGc()
     for (let i = 0; i < 44; i++){
         alloc(() => { return new Class1(null, null, null, null, null); })
     }
     let l7: ArkTsIndexAccess | null = alloc(() => { return new Class2(null, l6); })
-    let l8: ArkTsIndexAccess | null = alloc(() => { return new Class2(l7?.loadField(0), null); })
+    let l8: ArkTsIndexAccess | null = alloc(() => { return new Class2(l7?.loadField(0) ?? null, null); })
     g0
-    g1 = l2?.loadField(11)
-    l6 = l8?.loadField(1)
+    g1 = l2?.loadField(11) ?? null
+    l6 = l8?.loadField(1) ?? null
     let l10: ArkTsIndexAccess | null = alloc(() => { return new Class1(g1, g1, null, null, null); })
     let l11: ArkTsIndexAccess | null = alloc(() => { return new Class2(l1, g1); })
-    l11?.loadField(1)?.loadField(195)?.loadField(145)?.loadField(114)
+    l11?.loadField(1)?.loadField(195)?.loadField(145)?.loadField(114) ?? null
     tryGc()
-    let l13: ArkTsIndexAccess | null = alloc(() => { return new Class0(l2?.loadField(9), g0, g1, null, null, null, null, null, null, null, null, null, null, null); })
+    let l13: ArkTsIndexAccess | null = alloc(() => { return new Class0(l2?.loadField(9) ?? null, g0, g1, null, null, null, null, null, null, null, null, null, null, null); })
     return null
 }
 
@@ -294,7 +293,7 @@ function mainBodyImpl(): Object | null{
     let l2: ArkTsIndexAccess | null = alloc(() => { return new Class1(null, null, null, null, null); })
     l0?.loadField(419581855)?.storeField(906175633, l1)
     g0 = l0
-    l2 = g0?.loadField(419581855)?.loadField(906175633)
+    l2 = g0?.loadField(419581855)?.loadField(906175633) ?? null
     l0?.loadField(419581855)?.storeField(906175633, null)
     g0 = null
     tryGc()
