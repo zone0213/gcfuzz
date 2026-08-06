@@ -1,7 +1,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 interface ArkTsIndexAccess {
     loadField(index: number): ArkTsIndexAccess | null;
-    storeField(index: number, value: Object | null): void;
+    storeField(index: number, value: ArkTsIndexAccess | null): void;
 }
 
 class ArkTsArrayBox implements ArkTsIndexAccess {
@@ -11,10 +11,12 @@ class ArkTsArrayBox implements ArkTsIndexAccess {
         this.values = new Array<Object | null>(len).fill(null);
         if (len > 0) { this.values[0] = seed; }
     }
-    loadField(index: number): Object | null {
-        return this.values[index % this.values.length];
+    loadField(index: number): ArkTsIndexAccess | null {
+        // ArkTsArrayBox stores raw Object[]; loadField returns null (cases never read
+        // ArrayBox fields via loadField — it's a prelude utility, not a case class).
+        return null;
     }
-    storeField(index: number, value: Object | null): void {
+    storeField(index: number, value: ArkTsIndexAccess | null): void {
         this.values[index % this.values.length] = value;
     }
 }
@@ -107,10 +109,10 @@ function assertReachability(label: string, expectation: number, value: Object | 
 function registerObservation(observationId: number, target: Object | null): void {
     if (target != null) { fr.register(target, target); }
 }
-let g0: Object | null = null
-let g1: Object | null = null
+let g0: ArkTsIndexAccess | null = null
+let g1: ArkTsIndexAccess | null = null
 class Class0 implements ArkTsIndexAccess{
-    constructor(f0: Object | null, f1: Object | null, f2: Object | null, f3: Object | null, f4: Object | null, f5: Object | null, f6: Object | null, f7: Object | null, f8: Object | null, f9: Object | null, f10: Object | null, f11: Object | null, f12: Object | null, f13: Object | null)
+    constructor(f0: WeakRef<Object> | null, f1: number, f2: WeakRef<Object> | null, f3: ArkTsIndexAccess | null, f4: number, f5: ArkTsIndexAccess | null, f6: ArkTsIndexAccess | null, f7: ArkTsIndexAccess | null, f8: ArkTsIndexAccess | null, f9: ArkTsIndexAccess | null, f10: ArkTsIndexAccess | null, f11: ArkTsIndexAccess | null, f12: ArkTsIndexAccess | null, f13: number)
     {
         this.f0 = f0 == null ? null : new WeakRef<Object>(f0)
         this.f1 = anyToInt(f1)
@@ -130,16 +132,16 @@ class Class0 implements ArkTsIndexAccess{
     f0: WeakRef<Object> | null = null
     f1: number = anyToInt(null)
     f2: WeakRef<Object> | null = null
-    f3: Object | null = null
+    f3: ArkTsIndexAccess | null = null
     f4: number = anyToInt(null)
-    f5: Object | null = null
-    f6: Object | null = null
-    f7: Object | null = null
-    f8: Object | null = null
-    f9: Object | null = null
-    f10: Object | null = null
-    f11: Object | null = null
-    f12: Object | null = null
+    f5: ArkTsIndexAccess | null = null
+    f6: ArkTsIndexAccess | null = null
+    f7: ArkTsIndexAccess | null = null
+    f8: ArkTsIndexAccess | null = null
+    f9: ArkTsIndexAccess | null = null
+    f10: ArkTsIndexAccess | null = null
+    f11: ArkTsIndexAccess | null = null
+    f12: ArkTsIndexAccess | null = null
     f13: number = anyToInt(null)
     loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 14){
@@ -160,7 +162,7 @@ class Class0 implements ArkTsIndexAccess{
             default: return null;
         }
     }
-    storeField(index: number, value: Object | null): void{
+    storeField(index: number, value: ArkTsIndexAccess | null): void{
         switch (index % 14){
             case 0: this.f0 = value == null ? null : new WeakRef<Object>(value); break;
             case 1: this.f1 = anyToInt(value); break;
@@ -182,7 +184,7 @@ class Class0 implements ArkTsIndexAccess{
 }
 
 class Class1 implements ArkTsIndexAccess{
-    constructor(f0: Object | null, f1: Object | null, f2: Object | null, f3: Object | null, f4: Object | null)
+    constructor(f0: WeakRef<Object> | null, f1: ArkTsIndexAccess | null, f2: WeakRef<Object> | null, f3: ArkTsIndexAccess | null, f4: number)
     {
         this.f0 = f0 == null ? null : new WeakRef<Object>(f0)
         this.f1 = f1
@@ -191,9 +193,9 @@ class Class1 implements ArkTsIndexAccess{
         this.f4 = anyToInt(f4)
     }
     f0: WeakRef<Object> | null = null
-    f1: Object | null = null
+    f1: ArkTsIndexAccess | null = null
     f2: WeakRef<Object> | null = null
-    f3: Object | null = null
+    f3: ArkTsIndexAccess | null = null
     f4: number = anyToInt(null)
     loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 5){
@@ -205,7 +207,7 @@ class Class1 implements ArkTsIndexAccess{
             default: return null;
         }
     }
-    storeField(index: number, value: Object | null): void{
+    storeField(index: number, value: ArkTsIndexAccess | null): void{
         switch (index % 5){
             case 0: this.f0 = value == null ? null : new WeakRef<Object>(value); break;
             case 1: this.f1 = value; break;
@@ -218,12 +220,12 @@ class Class1 implements ArkTsIndexAccess{
 }
 
 class Class2 implements ArkTsIndexAccess{
-    constructor(f0: Object | null, f1: Object | null)
+    constructor(f0: ArkTsIndexAccess | null, f1: WeakRef<Object> | null)
     {
         this.f0 = f0
         this.f1 = f1 == null ? null : new WeakRef<Object>(f1)
     }
-    f0: Object | null = null
+    f0: ArkTsIndexAccess | null = null
     f1: WeakRef<Object> | null = null
     loadField(index: number): ArkTsIndexAccess | null{
         switch (index % 2){
@@ -232,7 +234,7 @@ class Class2 implements ArkTsIndexAccess{
             default: return null;
         }
     }
-    storeField(index: number, value: Object | null): void{
+    storeField(index: number, value: ArkTsIndexAccess | null): void{
         switch (index % 2){
             case 0: this.f0 = value; break;
             case 1: this.f1 = value == null ? null : new WeakRef<Object>(value); break;
