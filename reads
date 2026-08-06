@@ -20,6 +20,11 @@ APP_TEST_CASE_SET_FILE_NAME = os.path.join(
     CommonUtils.get_jsonpath(), 'testCaseList.xlsx'
 )
 
+# 【修改点 1】增加调试打印，确保你一眼就能看到脚本到底在读哪个 Excel 文件
+print("="*50)
+print(f"DEBUG: 正在读取的测试列表文件: {os.path.abspath(APP_TEST_CASE_SET_FILE_NAME)}")
+print("="*50)
+
 case_infos_file = os.path.join(CommonUtils.get_jsonpath(), "testCaseList.json")
 
 
@@ -213,11 +218,16 @@ class Test:
         task_id = CommonUtils.get_timestamp()
         output = os.path.join(self.root_path, "reports", task_id, "all")
 
-        main_process(f"run -l {case_list} -rp {output} --repeat {self.loops}")
+        # 【修改点 2】在这里增加了 -ta 参数，强制让 xdevice 连接当前变量 self.device_sn
+        # 防止它去读取 user_config.xml 里的错误 SN 或扫描出错误的设备
+        main_process(f"run -l {case_list} -rp {output} --repeat {self.loops} -ta {self.device_sn}")
 
 
 if __name__ == '__main__':
     sn = CommonUtils.get_sn()
+    # 打印一下获取到的 SN，确保没抓错
+    print(f"DEBUG: 当前检测到的手机 SN 为: {sn}")
+
     if sn not in _get_test_device_sn():
         print(f"未找到设备: {sn}")
         exit(1)
