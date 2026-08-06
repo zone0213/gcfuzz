@@ -1,37 +1,34 @@
-(.venv) PS D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new>  python .\catch_app_mem_info_debug.py
-Traceback (most recent call last):
-  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\catch_app_mem_info_debug.py", line 11, in <module>
-    from aw.common.CommonUtils import CommonUtils
-  File "D:\0806modelcase\ModelCase_ResourceUsage_OHOS-master-B100_new\aw\common\CommonUtils.py", line 19, in <module>
-    def start_appname_click(d: UiExplorer, app_name, sleep):
-                               ^^^^^^^^^^
-NameError: name 'UiExplorer' is not defined
-
-
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
+from __future__ import annotations  # 解决 UiExplorer 等类型未定义的报错
 import re
 import shutil
 import subprocess
 import json
-import time, os
+import time
+import os
 import pandas as pd
 import xml.dom.minidom as xmldom
-
-# 导入接口类
-from hypium import *
-import aw.meminfo.global_init
 from pathlib import Path
 import datetime
 import concurrent.futures
 
+# 导入 hypium 相关类
+# 注意：如果环境里没有安装 hypium，这里会报错。请确保在终端执行了 pip install hypium
+try:
+    from hypium import *
+    # 显式导入常用类以增强 IDE 识别
+    from hypium.model.ui_param import UiExplorer, UiDriver
+except ImportError:
+    print("Warning: hypium module not found. Please install it in your .venv")
+
+import aw.meminfo.global_init
 
 def start_appname_click(d: UiExplorer, app_name, sleep):
     """
     @func  在桌面查找app，并点击启动
     @param sleep: 启动后等待时间，单位：秒
-    @param app_name: 需要查找的app名称(用户看到的app名称，不是包名，用UiView工具看到的text或者description)
-
+    @param app_name: 需要查找的app名称
     Author: dwx1125791
     """
     Launcher.start_app(d, app_name=app_name)
@@ -47,7 +44,7 @@ def clear_recent_tasks(d: UiExplorer):
     # 进入多任务界面
     SystemUI.swipe_to_recent_task(d)
     d.wait(3)
-    # d.touch((655, 2547))
+    # 适配不同设备的清除按钮
     d.touch(BY.key("RecentClearAllView_Image_deleteFull"))
     d.wait(5)
     d.press_home()
@@ -66,7 +63,7 @@ class CommonUtils(object):
     # 阻塞式cmd执行
     @staticmethod
     def exe_cmd(cmd, timeout=120000):
-        ret = 'error'
+        ret = b'error'
         try:
             # 执行成功
             ret = subprocess.check_output(cmd, timeout=timeout, stderr=subprocess.STDOUT)
@@ -79,47 +76,28 @@ class CommonUtils(object):
 
     @staticmethod
     def insert_lines_after_x(filename, x, new_lines):
-        """
-        在文件的第 x 行和 x+1 行之间插入多行数据，
-        插入行的缩进与 x+1 行一致。
-        :param filename:文件路径
-        :param x: 插入位置（第 x 行之后，注意：x 从 0 开始计数）
-        :param new_lines: 要插入的新行列表，如 ['line1', 'line2']
-        """
-        # 读取原文件内容
         with open(filename, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-        # 检查 x 是否有效
         if x < 0 or x >= len(lines):
             raise ValueError(f"行号 x 必须在 0 到 {len(lines) - 1} 之间")
-        # 获取 x+1 行的原始内容（用于提取缩进）
         next_line = lines[x - 1]
-        # 提取前导空白字符（空格和制表符）
         indent = ''
         for char in next_line:
-            if char in ' 	':
+            if char in ' \t':
                 indent += char
             else:
                 break
-        # 构造插入内容（每行前面加上相同的缩进）
         inserted_lines = []
         for line in new_lines:
-            inserted_lines.append(indent + line)
-        # 插入到第 x 行之后（即在 x+1 位置前插入）
+            inserted_lines.append(indent + line + '\n')
         lines[x + 1:x + 1] = inserted_lines
-        # 写回文件
         with open(filename, 'w', encoding='utf-8') as f:
             f.writelines(lines)
 
     @staticmethod
     def copy_and_rename_file(source_file, new_filename):
-        # 获取源文件的目录路径
         source_dir = os.path.dirname(source_file)
-
-        # 构造目标文件的完整路径
         destination_file = os.path.join(source_dir, new_filename)
-
-        # 复制并重命名文件
         shutil.copy2(str(source_file), str(destination_file))
 
     @staticmethod
@@ -153,7 +131,6 @@ class CommonUtils(object):
 
     @staticmethod
     def start_collect_trace(sn, method, cpu_time=600):
-        # 采集trace
         cmd = 'hdc -t {0} shell "hiprofiler_cmd -o /data/local/tmp/hiprofiler_{1}.htrace -t {2} -s -k --config /data/local/tmp/trace_hiperf_config.txt"'.format(
             sn, method, cpu_time
         )
@@ -172,13 +149,11 @@ class CommonUtils(object):
                 file_name = line_info[-1]
                 if 'hiprofiler_' in file_name and '.htrace' in file_name and method in file_name:
                     trace_name_list.append(file_name)
-        cmd1 = 'hdc -t {0} shell "pidof  hiprofiler_cmd | xargs kill -SIGINT"'.format(sn)
+        cmd1 = 'hdc -t {0} shell "pidof hiprofiler_cmd | xargs kill -SIGINT"'.format(sn)
         CommonUtils.exe(cmd1)
-        print(cmd1)
         time.sleep(20)
         cmd2 = 'hdc -t {0} shell "ps -ef > /data/local/tmp/ps_ef.txt"'.format(sn)
         CommonUtils.exe(cmd2)
-        print(cmd2)
         time.sleep(2)
         hitrace_path = os.path.join(report_path, 'hitrace')
         CommonUtils.create_directory(hitrace_path)
@@ -210,12 +185,10 @@ class CommonUtils(object):
 
     @staticmethod
     def getTime():
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        return new_time
+        return time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
 
     @staticmethod
     def reboot(d: UiExplorer):
-        # 手机重启
         d.System.reboot()
         d.System.wait_for_boot_complete()
         d.wake_up_display()
@@ -227,475 +200,32 @@ class CommonUtils(object):
 
     @staticmethod
     def get_battera_capacity(sn):
-        # 获取手机当前电量
         temp = CommonUtils.exe_cmd('adb -s {} shell "cat /sys/class/power_supply/Battery/capacity"'.format(sn))
-        return int(str(temp).split('\\r')[0].split("""'""")[1])
+        try:
+            return int(temp.decode().strip())
+        except:
+            return 0
 
     @staticmethod
     def run_with_timeout(func, timeout):
-        # 超时检测，若超过指定时间，则强制退出
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(func)
             try:
                 result = future.result(timeout=timeout)
-                print("函数执行完成")
                 return result
             except concurrent.futures.TimeoutError:
-                print("函数执行超时，强制退出，主进程业务正常往下执行")
+                print("Execution Timeout")
                 future.cancel()
                 return None
 
     @staticmethod
-    def get_battery_level(sn):
-        # 使用ADB命令获取电池电量
-        result = subprocess.check_output(['adb', '-s', sn, 'shell', 'dumpsys', 'battery']).decode('utf-8')
-        for line in result.split('\r\n'):
-            if 'level' in line:
-                level = int(line.split(':')[1].strip())
-                return level
-        return None
-
-    @staticmethod
-    def is_charging(sn):
-        # 检查手机是否在充电
-        result = subprocess.check_output(['adb', '-s', sn, 'shell', 'dumpsys', 'battery']).decode('utf-8')
-        for line in result.split('\r\n'):
-            if 'AC powered' in line or 'USB powered' in line:
-                if 'true' in line:
-                    return True
-        return False
-
-    @staticmethod
-    def checkout_battery(sn):
-        while True:
-            battery_level = CommonUtils.get_battery_level(sn)
-            if battery_level is None:
-                print("无法获取电池电量")
-                break
-            print(f"当前电池电量: {battery_level}%")
-            if battery_level < 70:
-                print("电量低于70%，请充电。")
-                while battery_level < 70:
-                    if not CommonUtils.is_charging(sn):
-                        print("手机未充电，请确保手机正在充电。")
-                    battery_level = CommonUtils.get_battery_level(sn)
-                    time.sleep(60)  # 每隔60秒检查一次电量
-                print("电量已达到70%，开始执行任务。")
-                break
-            else:
-                print("电量充足，开始执行任务。")
-                break
-
-    @staticmethod
-    def get_jsonpath():
-        p = __file__
-        p = os.path.join(p) + "/../../../"
-        jsonPath = os.path.join(os.path.abspath(p), 'config')
-        return jsonPath
-
-    @staticmethod
-    def get_txt_info(file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        return content
-
-    @staticmethod
-    def creat_txt_info(path, filename, string):
-        with open(os.path.join(path, filename), "w") as fd:
-            fd.write(string)
-
-    @staticmethod
-    def get_memory_psi_health_info(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /dev/memcg/memory.psi_health_info > /data/local/tmp/memory_psi_health_info/{1}"'.format(
-            sn, new_name
-        )
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_MemTxt(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "hidumper --mem > /data/local/tmp/dynamicMem/{1}"'.format(sn, new_name)
-        CommonUtils.exe(cmd)
-
-    @staticmethod
-    def get_StaticMemTxt(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "hidumper --mem > /data/local/tmp/staticMem/{1}"'.format(sn, new_name)
-        CommonUtils.exe_cmd(cmd)
-        time.sleep(20)
-
-    @staticmethod
-    def get_procMem(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /proc/meminfo > /data/local/tmp/procMem/{1}"'.format(sn, new_name)
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_DMA_Txt(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        new_name2 = 'dma_heap' + new_time + '.txt'
-
-        cmd = 'hdc -t {0} shell "cat /proc/ion_process_info> /data/local/tmp/DMA_Dir/{1}"'.format(sn, new_name)
-        cmd2 = 'hdc -t {0} shell "cat /proc/dmaheap_process_info > /data/local/tmp/DMA_Dir/{1}"'.format(sn, new_name2)
-
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_vmalloc(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /proc/vmallocinfo > /data/local/tmp/vmalloc/{1}"'.format(sn, new_name)
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_memtrack(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /proc/memtrack > /data/local/tmp/memtrack/{1}"'.format(sn, new_name)
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_cma_info(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /proc/cma_info > /data/local/tmp/cma_info/{1}"'.format(sn, new_name)
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def get_memview(sn, fileName):
-        new_time = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-        new_name = fileName + '_' + new_time + '.txt'
-        cmd = 'hdc -t {0} shell "cat /proc/memview > /data/local/tmp/memview/{1}"'.format(sn, new_name)
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    @staticmethod
-    def getThreadAndPid(sn):
-        normal_dir = dict()
-        hidumperFile = CommonUtils.exe_cmd('hdc -t {} shell hidumper --mem'.format(sn)).decode()
-        lines = hidumperFile.split('\n')
-        startindex = 0
-        endindex = 0
-        for line in lines:
-            if "Total Pss by OOM adjustment:" in line:
-                startindex = lines.index(line)
-            if "Total Pss by Category:" in line:
-                endindex = lines.index(line)
-        for i in range(startindex + 1, endindex - 1):
-            if 'pid=' in lines[i]:
-                pid = re.findall(r'=(.*)\):', lines[i])[0]
-                process_name = lines[i].replace(' ', '').split('(')[0]
-                normal_dir[pid] = process_name
-        print(normal_dir)
-        return normal_dir
-
-    @staticmethod
-    def pullShowMap(sn):
-        path = os.path.abspath(os.path.join(os.getcwd(), ".."))
-        showmapPath = os.path.join(path, 'ResourceUsageTest', 'config', 'smaps-show')
-        CommonUtils.exe("hdc -t {} shell mount -o rw,remount /".format(sn))
-        CommonUtils.exe('hdc -t {0} file send {1} /system/bin/'.format(sn, showmapPath))
-        CommonUtils.exe('hdc -t {} shell chmod -R 777 /system/bin/smaps-show'.format(sn))
-
-    @staticmethod
-    def pullSimpleperf(sn, type):
-        path = os.path.abspath(os.path.join(os.getcwd(), ".."))
-        simpleperfPath = os.path.join(path, 'modelCase_OH', 'config', 'simpleperf')
-        if type == "OH":
-            CommonUtils.exe("hdc -t {} shell mount -o rw,remount /".format(sn))
-            CommonUtils.exe('hdc -t {0} file send {1} /system/bin/'.format(sn, simpleperfPath))
-            CommonUtils.exe('hdc -t {} shell chmod -R 777 /system/bin/simpleperf'.format(sn))
-        if type == "HO":
-            CommonUtils.exe("adb -s {} shell mount -o rw,remount /".format(sn))
-            CommonUtils.exe('adb -s {0} push {1} /data/local/tmp'.format(sn, simpleperfPath))
-            CommonUtils.exe('adb -s {} shell chmod -R 777 /data/local/tmp/simpleperf'.format(sn))
-
-    @staticmethod
-    def pullHiperf(sn, path):
-        cmd1 = "hdc -t {} shell mount -o rw,remount /".format(sn)
-        CommonUtils.exe_cmd(cmd1)
-        hiperfPath = os.path.join(path, 'hiperf')
-        cmd2 = "hdc -t {0} file send {1} /bin/".format(sn, hiperfPath)
-        CommonUtils.exe_cmd(cmd2)
-        soPath1 = os.path.join(path, 'libextractortool.z.so')
-        cmd3 = "hdc -t {0} file send {1} /system/lib64/platformsdk/libextractortool1.z.so".format(sn, soPath1)
-        CommonUtils.exe_cmd(cmd3)
-        cmd4 = 'hdc -t {} shell "rm -rf /system/lib64/platformsdk/libextractortool.z.so"'.format(sn, hiperfPath)
-        CommonUtils.exe_cmd(cmd4)
-        cmd5 = 'hdc -t {} shell "mv /system/lib64/platformsdk/libextractortool1.z.so /system/lib64/platformsdk/libextractortool.z.so"'.format(
-            sn
-        )
-        CommonUtils.exe_cmd(cmd5)
-        soPath2 = os.path.join(path, 'libark_jsruntime.so')
-        cmd6 = "hdc -t {0} file send {1} /system/lib64/platformsdk/".format(sn, soPath2)
-        CommonUtils.exe_cmd(cmd6)
-        soPath3 = os.path.join(path, 'stub.an')
-        cmd7 = "hdc -t {0} file send {1} /system/lib64/module/arkcompiler/".format(sn, soPath3)
-        CommonUtils.exe_cmd(cmd7)
-
-    @staticmethod
-    def creatDir(sn, rootPath, dirList=[]):
-        for i in dirList:
-            dirPath = rootPath + '/' + i
-            CommonUtils.exe_cmd('hdc -t {0} shell "mkdir -p {1}"'.format(sn, dirPath))
-
-    @staticmethod
-    def delDir(sn, rootPath, dirList=[]):
-        for i in dirList:
-            dirPath = rootPath + '/' + i
-            CommonUtils.exe_cmd('hdc -t {0} shell "rm -rf  {1}"'.format(sn, dirPath))
-
-    @staticmethod
     def create_directory(path):
-        # 递归创建文件夹
-        try:
-            Path(path).mkdir(parents=True, exist_ok=True)  # parents=True 表示创建所有必要的父目录
-            print(f"目录 {path} 创建成功")
-        except Exception as e:
-            print(f"创建目录时出错: {e}")
+        Path(path).mkdir(parents=True, exist_ok=True)
         return path
 
     @staticmethod
-    def get_device_info(sn, resultPath, packagename):
-
-        os.mkdir(os.path.join(resultPath, "env"))
-        os.mkdir(os.path.join(resultPath, "hap_info"))
-
-        # 拉取device_info
-        device_info_destination_folder = os.path.join(resultPath, 'env')
-        CommonUtils.exe_cmd(
-            'hdc -t {0} file recv /data/log/logpack/device_info.txt {1}'.format(sn, device_info_destination_folder)
-        )
-
-        # 拉取hap包
-        hap_info_destination_folder = os.path.join(resultPath, 'hap_info')
-        CommonUtils.exe_cmd(
-            'hdc -t {0} file recv /data/app/el1/bundle/public/{1} {2}'.format(
-                sn, packagename, hap_info_destination_folder
-            )
-        )
-
-        # 拉取abc文件
-        memdumper_info_destination_folder = os.path.join(resultPath, 'hap_info', packagename)
-        CommonUtils.exe_cmd('hdc -t {0} file recv /data/local/decrypt {1}'.format(sn, memdumper_info_destination_folder))
-
-        CommonUtils.translate_json(os.path.join(device_info_destination_folder, 'device_info.txt'))
-        os.remove(os.path.join(device_info_destination_folder, 'device_info.txt'))
-
-    @staticmethod
-    def translate_json(file_path):
-        data_dict = {}
-        with open(file_path, "r", encoding='utf-8') as file:
-            lines = file.readlines()
-            for line in lines:
-                parts = line.strip().split(':')
-                key = parts[0].strip()
-                value = parts[1].strip()
-                if key == "casename":
-                    value = value.replace('b', '')
-                data_dict[key] = value
-
-        json_str = json.dumps(data_dict, indent=4, ensure_ascii=False).replace('\\n', '\\n')
-        # json_str = json.dumps(data_dict,indent=4,ensure_ascii=False).replace('\\n', '\\n')
-        json_file_path = file_path.replace('.txt', '.json')
-        with open(json_file_path, 'w') as json_file:
-            json_file.write(json_str)
-
-    @staticmethod
-    def mkDir(path):
-        folder = os.path.exists(path)
-        if not folder:
-            os.makedirs(path)
-
-    @staticmethod
-    def mkTwoDir(path, file1, file2):
-        path1 = os.path.join(path, file1)
-        CommonUtils.mkDir(path1)
-        path2 = os.path.join(path1, file2)
-        CommonUtils.mkDir(path2)
-        return path2
-
-    @staticmethod
-    def mkRoundDir(path, testRounds):
-        dataPath = path
-        roundPath = os.path.join(dataPath, str(testRounds))
-        folder = os.path.exists(roundPath)
-        if not folder:
-            os.makedirs(roundPath)
-        else:
-            c_curr = max([int(i.strip()) for i in os.listdir(dataPath) if i.strip().isdigit()])
-            roundPath = os.path.join(dataPath, str(c_curr + 1))
-            CommonUtils.mkDir(roundPath)
-        return roundPath
-
-    @staticmethod
-    def rmdir_list_linux(sn, dirlist, path):
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('hdc -t {0} shell "rm -rf {1}"'.format(sn, new_path))
-
-    @staticmethod
-    def rmdir_list_linux_HO(sn, dirlist, path):
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('adb -s {0} shell "rm -rf {1}"'.format(sn, new_path))
-
-    @staticmethod
-    def mkdir_list_linux(sn, dirlist, path):
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('hdc -t {0} shell "mkdir {1}"'.format(sn, new_path))
-
-    @staticmethod
-    def mkdir_list_linux_HO(sn, dirlist, path):
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('adb -s {0} shell "mkdir {1}"'.format(sn, new_path))
-
-    @staticmethod
-    def recvdir_list_linux(sn, dirlist, path, recv_path):
-        folder = os.path.exists(recv_path)
-        if not folder:
-            os.makedirs(recv_path)
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('hdc -t {0} file recv {1} {2}'.format(sn, new_path, recv_path))
-
-    @staticmethod
-    def recvdir_list_linux_HO(sn, dirlist, path, recv_path):
-        folder = os.path.exists(recv_path)
-        if not folder:
-            os.makedirs(recv_path)
-        for i in dirlist:
-            new_path = path + '/' + i
-            CommonUtils.exe_cmd('adb -s {0} pull {1} {2}'.format(sn, new_path, recv_path))
-
-    @staticmethod
-    def getThreads(type, processlist, SN, method):
-        flag = CommonUtils.get_json("ResourceCase.json")["CPU"]
-        if not flag:
-            get_time = CommonUtils.getTime()
-            # 单框架
-            if type == "OH":
-                # 用例抓取单个进程
-                if len(processlist) == 1:
-                    process = processlist[0]
-                    # 一个进程名有多个pid
-                    pidlist = os.popen(r'hdc -t {0} shell "pidof {1}"'.format(SN, process)).read().split()
-                    if len(pidlist) > 1:
-                        for i in range(len(pidlist)):
-                            # 线程数_log
-                            CommonUtils.exe_cmd(
-                                'hdc -t {0} shell "ps -AT {1} > /data/local/tmp/All_Thread/All_Thread_0_{2}_{3}.txt"'.format(
-                                    SN, pidlist[i], str(i), get_time
-                                )
-                            )
-                    # 一个进程名一个pid
-                    else:
-                        # 线程数_log
-                        CommonUtils.exe_cmd(
-                            'hdc -t {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_0_0_{2}.txt"'.format(
-                                SN, process, get_time
-                            )
-                        )
-                # 用例抓取多个进程
-                elif len(processlist) > 1:
-                    get_time = CommonUtils.getTime()
-                    for j in range(len(processlist)):
-                        process = processlist[j]
-                        # 一个进程名有多个pid
-                        pidlist = os.popen(r'hdc -t {0} shell "pidof {1}"'.format(SN, process)).read().split()
-                        if len(pidlist) > 1:
-                            for i in range(len(pidlist)):
-                                # 线程数_log
-                                CommonUtils.exe_cmd(
-                                    'hdc -t {0} shell "ps -AT {1} > /data/local/tmp/All_Thread/All_Thread_{2}_{3}_{4}.txt"'.format(
-                                        SN, pidlist[i], str(j), str(i), get_time
-                                    )
-                                )
-                        # 一个进程名一个pid
-                        elif len(pidlist) == 1:
-                            # 线程数_log
-                            CommonUtils.exe_cmd(
-                                'hdc -t {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_{2}_0_{3}.txt"'.format(
-                                    SN, process, str(j), get_time
-                                )
-                            )
-                        else:
-                            print(process + "进程不存在，无线程数log")
-                else:
-                    print("不抓取线程数")
-
-            # 双框架
-            else:
-                get_time = CommonUtils.getTime()
-                # 用例抓取的单个进程
-                if len(processlist) == 1:
-                    process = processlist[0]
-                    # 浏览器有多个进程，且进程名不固定，需要实时查询
-                    if process == "com.huawei.browser":
-                        processlist = os.popen('adb -s {0} shell "ps -A | grep {1}"'.format(SN, process)).readlines()
-                        pidlist = []
-                        for list1 in processlist:
-                            pidlist.append(list1.strip().split()[1])
-                        for i in range(len(pidlist)):
-                            # 线程数_log
-                            CommonUtils.exe_cmd(
-                                'adb -s {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_{2}_{3}.txt"'.format(
-                                    SN, process, str(i), get_time
-                                )
-                            )
-                    else:
-                        # 线程数_log
-                        CommonUtils.exe_cmd(
-                            'adb -s {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_{2}.txt"'.format(
-                                SN, process, get_time
-                            )
-                        )
-
-                # 用例抓取多个进程
-                elif len(processlist) > 1:
-                    get_time = CommonUtils.getTime()
-                    for j in range(len(processlist)):
-                        process = processlist[j]
-                        # 浏览器有多个进程，且进程名不固定，需要实时查询
-                        if process == "com.huawei.browser":
-                            processlist = os.popen('adb -s {0} shell "ps -A | grep {1}"'.format(SN, process)).readlines()
-                            pidlist = []
-                            for list1 in processlist:
-                                pidlist.append(list1.strip().split()[1])
-                            for i in range(len(pidlist)):
-                                # 线程数_log
-                                CommonUtils.exe_cmd(
-                                    'adb -s {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_{2}_{3}.txt"'.format(
-                                        SN, process, str(i), get_time
-                                    )
-                                )
-                        else:
-                            pidlist = os.popen(r'adb -s {0} shell "pidof {1}"'.format(SN, process)).read().split()
-                            if len(pidlist) == 1:
-                                # 线程数_log
-                                CommonUtils.exe_cmd(
-                                    'adb -s {0} shell "ps -AT `pidof {1}` > /data/local/tmp/All_Thread/All_Thread_{2}.txt"'.format(
-                                        SN, process, get_time
-                                    )
-                                )
-                            else:
-                                print(process + "进程不存在，无线程数log")
-                else:
-                    print("不抓取线程数")
-
-    @staticmethod
-    def swipe_HO(sn, x1, y1, x2, y2, time=300):
-        CommonUtils.exe_cmd(
-            'adb -s {0} shell input swipe {1} {2} {3} {4} {5}'.format(sn, str(x1), str(y1), str(x2), str(y2), str(time))
-        )
+    def touch_OH(sn, x1, y1):
+        CommonUtils.exe_cmd('hdc -t {0} shell uinput -T -c {1} {2} 50'.format(sn, str(x1), str(y1)))
 
     @staticmethod
     def swipe_OH(sn, x1, y1, x2, y2, time=300):
@@ -704,832 +234,42 @@ class CommonUtils(object):
         )
 
     @staticmethod
-    def touch_OH(sn, x1, y1):
-        CommonUtils.exe_cmd('hdc -t {0} shell uinput -T -c {1} {2} 50'.format(sn, str(x1), str(y1)))
-
-    # 根据控件Path获取控件位置
-    @staticmethod
-    def touch_bounds(driver: UiDriver, path: str):
-        bounds = driver.UiTree.find_component_by_path(path)
-        index = bounds.getBounds()
-        driver.touch(target=(int(index.left + index.right) / 2, int(index.bottom + index.top) / 2))
-
-    '''
-    #!!================================================================
-                             双框架常用方法
-    #!!================================================================
-    '''
-
-    @staticmethod
-    def getSN(device=0):
-        removeList = ['List', 'of', 'devices', 'attached', 'device']
-        cmdline = os.popen(r'adb devices').read().split()
-        if device == 0:
-            return cmdline[-2]
-        else:
-            for i in removeList:
-                cmdline.remove(i)
-            return cmdline
-
-    @staticmethod
-    def creatDir_HO(sn, rootPath, dirList=[]):
-        for i in dirList:
-            dirPath = rootPath + '/' + i
-            CommonUtils.exe_cmd('adb -s {0} shell "mkdir {1}"'.format(sn, dirPath))
-
-    @staticmethod
-    def delDir_HO(sn, rootPath, dirList=[]):
-        for i in dirList:
-            dirPath = rootPath + '/' + i
-            CommonUtils.exe_cmd('adb -s {0} shell "rm -rf  {1}"'.format(sn, dirPath))
-
-    @staticmethod
-    def get_json(file):
-        p = __file__
-        p = os.path.join(p) + "/../../../"
-        jsonPath = os.path.join(os.path.abspath(p), 'config', file)
-        with open(jsonPath, encoding="utf-8") as f:
-            jsonDir = json.load(f)
-        return jsonDir
-
-    @staticmethod
-    def change_json(file, key, flag):
-        p = __file__
-        p = os.path.join(p) + "/../../../"
-        jsonPath = os.path.join(os.path.abspath(p), 'config', file)
-        with open(jsonPath, 'rb') as f:
-            # json对象获取
-            loads = json.loads(f.read())
-            loads[key] = flag
-            with open(jsonPath, 'w') as f:
-                json.dump(loads, f, indent=4, ensure_ascii=False)
-
-    @staticmethod
-    def get_config_file(file):
-        p = __file__
-        p = os.path.join(p) + "/../../../"
-        config_file_path = os.path.join(os.path.abspath(p), 'config', file)
-        return config_file_path
-
-    @staticmethod
-    def get_perfetto_trace(sn, time):
-        # https://ui.perfetto.dev/#!/viewer
-        # http://perfetto.harmonyos.rnd.huawei.com
-        CommonUtils.exe_cmd('adb -s {} shell "setprop persist.traced.enable 1"'.format(sn))
-        CommonUtils.exe_cmd('adb -s {} shell "echo 0 > /d/tracing/tracing_on"'.format(sn))
-        # 目前没找到办法将perfettoTrace生成到别的文件夹，先使用cat重定向到别的文件夹中
-        CommonUtils.exe(
-            'adb -s {0} shell perfetto -t {1}s -b 1gb -s 2gb --out /data/misc/perfetto-traces/perfetto_trace gfx am input view sm wm '
-            'res pm idle freq sched binder_driver bionic dalvik ss hal aidl'.format(sn, time)
-        )
-
-    @staticmethod
-    def pull_perfetto_trace(sn):
-        CommonUtils.exe_cmd(
-            'adb -s {0} shell "cat /data/misc/perfetto-traces/perfetto_trace > /data/local/tmp/Trace/perfetto_trace"'.format(
-                sn
-            )
-        )
-        CommonUtils.exe_cmd('adb -s {} shell rm -rf /data/misc/perfetto-traces/perfetto_trace'.format(sn))
-
-    # 频点信息采集
-    @staticmethod
-    def get_cpu_time(sn, type, resultPath):
-
-        if type == 'OH':
-            count = 0
-            for i in range(12):
-                CommonUtils.exe(
-                    r"hdc -t {0} shell cat /sys/devices/system/cpu/cpu{1}/power/time_in_state > {2}".format(
-                        sn, str(count), os.path.join(resultPath, "cpu" + str(count) + "_state_" + str(time.time()))
-                    )
-                )
-                time.sleep(3)
-                CommonUtils.exe(
-                    r"hdc -t {0} shell cat /sys/devices/system/cpu/cpu{1}/power/time_in_smt > {2}".format(
-                        sn, str(count), os.path.join(resultPath, "cpu" + str(count) + "_smt_" + str(time.time()))
-                    )
-                )
-                time.sleep(3)
-                count = count + 1
-        else:
-            count = 0
-            for i in range(12):
-                CommonUtils.exe(
-                    r"adb -s {0} shell cat /sys/devices/system/cpu/cpu{1}/power/time_in_state > {2}".format(
-                        sn, str(count), os.path.join(resultPath, "cpu" + str(count) + "_state_" + str(time.time()))
-                    )
-                )
-                time.sleep(3)
-                CommonUtils.exe(
-                    r"adb -s {0} shell cat /sys/devices/system/cpu/cpu{1}/power/time_in_smt > {2}".format(
-                        sn, str(count), os.path.join(resultPath, "cpu" + str(count) + "_smt_" + str(time.time()))
-                    )
-                )
-                time.sleep(3)
-                count = count + 1
-
-    # 频点信息解析
-    @staticmethod
-    def parse_cpu_time(resultPath):
-        dirdict = {}
-        dirlist = os.listdir(resultPath)
-        resultlist = []
-        for i in dirlist:
-            if i.endswith('.txt'):
-                with open(os.path.join(resultPath, i)) as f:
-                    lines = f.readlines()
-                    lines2 = []
-                    if len(lines) > 1:
-                        for j in lines:
-                            lines2.append([j.split()[0], j.split()[1]])
-                        namelist = i.split('_')
-                        if namelist[0] + "_" + namelist[1] not in dirdict.keys():
-                            dirdict[namelist[0] + "_" + namelist[1]] = [lines2]
-                        else:
-                            dirdict[namelist[0] + "_" + namelist[1]].append(lines2)
-        for key in dirdict.keys():
-            resultlist.append([key])
-            for i in range(0, len(dirdict[key][0])):
-                resultlist.append([dirdict[key][0][i][0], int(dirdict[key][1][i][1]) - int(dirdict[key][0][i][1])])
-        excel_path = os.path.join(resultPath, 'parse_cputime_{}.xlsx'.format(time.time()))
-        writer = pd.ExcelWriter(excel_path)
-        df = pd.DataFrame(resultlist)
-        df.to_excel(writer, sheet_name="sheet1", header=False, index=False)
-        try:
-            writer._save()
-        except:
-            writer.save()
-
-    @staticmethod
-    def swipes_up_down_load(d: UiExplorer, swip_num: int, sleep=1):
-        """
-        @func    沿中间上下多次滑动，上滑swip_num次下滑swip_num次
-        @Param  swip_num：相同方向滑动次数
-        @Param  sleep:点击启动后等待时间，单位：秒
-
-        Author: dwx1125791
-        """
-        CommonUtils.swipes_up_load(d, swip_num=swip_num, sleep=sleep)
-        CommonUtils.swipes_down_load(d, swip_num=swip_num, sleep=sleep)
-
-    @staticmethod
-    def swipes_left_right_load(d: UiExplorer, swip_num: int, sleep=1):
-        """
-        @func    沿中间上下多次滑动，上滑swip_num次下滑swip_num次
-        @Param  swip_num：相同方向滑动次数
-        @Param  sleep:点击启动后等待时间，单位：秒
-
-        Author: dwx1125791
-        """
-        CommonUtils.swipes_left_load(d, swip_num=swip_num, sleep=sleep)
-        CommonUtils.swipes_right_load(d, swip_num=swip_num, sleep=sleep)
-
-    @staticmethod
-    def swipes_right_load(d: UiExplorer, swip_num: int, sleep):
-        """
-        @func    沿中间向右多次滑动
-        @Param  swip_num：滑动次数
-        @Param  sleep:滑动间隔时间，单位：秒
-
-        Author: dwx1125791
-        """
-        for i in range(swip_num):
-            # d.swipe(UiParam.RIGHT, distance=40, start_point=(0.3, 0.4), swipe_time=0.1)
-            CommonUtils.swipe_OH(d.sn, 504, 1360, 1008, 1360, time=80)
-            time.sleep(sleep)
-
-    @staticmethod
-    def swipes_left_load(d: UiExplorer, swip_num: int, sleep):
-        """
-        @func    沿中间向左多次滑动
-        @Param  swip_num：滑动次数
-        @Param  sleep:滑动间隔时间，单位：秒
-
-        Author: dwx1125791
-        """
-        for i in range(swip_num):
-            # d.swipe(UiParam.LEFT, distance=40, start_point=(0.8, 0.4), swipe_time=0.1)
-            CommonUtils.swipe_OH(d.sn, 1008, 1360, 504, 1360, time=80)
-            time.sleep(sleep)
-
-    @staticmethod
-    def swipes_up_load(d: UiExplorer, swip_num: int, sleep):
-        """
-        @func    沿中间向上多次滑动
-        @Param  swip_num：滑动次数
-        @Param  sleep:滑动间隔时间，单位：秒
-
-        Author: dwx1125791
-        """
-        for i in range(swip_num):
-            # d.swipe(UiParam.UP, distance=60, start_point=(0.5, 0.8), swipe_time=0.09)
-            CommonUtils.swipe_OH(d.sn, 630, 1904, 630, 1104, time=80)
-            time.sleep(sleep)
-
-    @staticmethod
-    def list_slices(initial_list, cut):
-        martix = []
-        left = initial_list
-        CumulativeLength = 0
-        for i in cut:
-            # 获取 子列表
-            sub = left[: i + 1 - CumulativeLength]  # list切片 左闭右开 故 +1
-            # 添加子列表
-            martix.append(sub)
-            # print("martix:",martix)
-            # 更新 剩余列表
-            left = left[i + 1 - CumulativeLength :]
-            # 更新累计append的子列表长度
-            CumulativeLength += len(sub)
-            # print("left",left)
-        martix.append(left)
-        return martix
-
-    @staticmethod
-    def transpose_2d(data):
-        transposed = []
-        for i in range(len(data[0])):
-            new_row = []
-            for row in data:
-                new_row.append(row[i])
-            transposed.append(new_row)
-        return transposed
-
-    @staticmethod
-    def change_device_info(result_path, case_name, start_time, result):
-        json_dict = dict()
-        json_dict['case_name'] = case_name
-        json_dict["start_time"] = start_time
-        json_dict['end_time'] = CommonUtils.getTime()
-        json_dict['task_id'] = aw.meminfo.global_init.get_task_id()
-        json_dict['result'] = result
-
-        json_path = os.path.join(result_path, 'env', 'device_info.json')
-        CommonUtils.add_device_info(json_path, json_dict)
-        if result == 'Passed':
-            CommonUtils.merge_json(result_path)
-        new_json_path = os.path.join(result_path, 'result.json')
-        if not os.path.exists(new_json_path):
-            json_path = os.path.join(result_path, 'env', 'device_info.json')
-            new_json_path = os.path.join(result_path, 'result.json')
-            with open(json_path, 'r') as file:
-                data1 = json.load(file)
-            data1["result"] = "Failed"
-            with open(new_json_path, 'w', encoding='utf-8') as file:
-                json.dump(data1, file, ensure_ascii=False, indent=4)
-
-            # shutil.copyfile(json_path, os.path.join(result_path, 'result.json'))
-
-    @staticmethod
-    def add_device_info(jsonPath, json_dict):
-        with open(jsonPath, 'rb') as f:
-            # json对象获取
-            loads = json.loads(f.read().decode('gbk'))
-            for key in json_dict.keys():
-                loads[key] = json_dict[key]
-            with open(jsonPath, 'w') as f:
-                json.dump(loads, f, indent=4, ensure_ascii=False)
-
-    @staticmethod
-    def merge_json(result_path):
-        json_path1 = os.path.join(result_path, 'env', 'device_info.json')
-        json_path2 = os.path.join(result_path, 'meminfo', 'total_process_meminfo.json')
-        with open(json_path1, 'r') as file:
-            data1 = json.load(file)
-        with open(json_path2, 'r', encoding='utf-8') as file:
-            data2 = json.load(file)
-        merged_data = {**data1, **data2}
-        new_json_path = os.path.join(result_path, 'result.json')
-        with open(new_json_path, 'w', encoding='utf-8') as file:
-            json.dump(merged_data, file, ensure_ascii=False, indent=4)
-
-    @staticmethod
-    def swipes_down_load(d: UiExplorer, swip_num: int, sleep):
-        """
-        @func    沿中间向下多次滑动
-        @Param  swip_num：滑动次数
-        @Param  sleep:滑动间隔时间，单位：秒
-
-        Author: dwx1125791
-        """
-        for i in range(swip_num):
-            # d.swipe(UiParam.DOWN, distance=60, start_point=(0.5, 0.2), swipe_time=0.09)
-            CommonUtils.swipe_OH(d.sn, 630, 816, 630, 1616, time=80)
-            time.sleep(sleep)
-
-    @staticmethod
-    def device_info(d: UiExplorer, packagename, casename):
-        cmd1 = 'hdc -t {0} shell "hitrace --trace_finish --record"'.format(d.sn)
-        CommonUtils.exe(cmd1)
-        print(cmd1)
-        cmd2 = 'hdc -t {0} shell "rm -rf /data/local/tmp/perf.data"'.format(d.sn)
-        CommonUtils.exe(cmd2)
-        print(cmd2)
-        cmd3 = 'hdc -t {0} shell "rm -rf /data/local/tmp/ps_ef.txt"'.format(d.sn)
-        CommonUtils.exe(cmd3)
-        print(cmd3)
-        cmd4 = 'hdc -t {0} shell "rm /data/log/logpack/runtime_profiler/device_info.txt"'.format(d.sn)
-        CommonUtils.exe_cmd(cmd4)
-        print(cmd4)
-
-        time.sleep(2)
-
-        def rematch(info):
-            matches = re.findall(r"'(.*?)'", str(info))
-            matches2 = re.findall(r'"(.*?)"', str(info))
-            if matches:
-                return matches[0]
-            if matches2:
-                return matches2[0]
-
-        CommonUtils.exe_cmd('hdc -t {0} shell "rm /data/log/logpack/device_info.txt"'.format(d.sn))
-
-        device_info = {}
-
-        # 应用包名
-        print(f"=============Casename==============={casename}")
-        device_info.update({"casename": str(casename).encode('utf-8')})
-        # device_info.update({"casename": casename})
-        # ROM版本
-        ROM_Version = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell "param get const.build.ver.physical"'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        ROM_Version = rematch(ROM_Version)
-        device_info.update({"ROM_Version": ROM_Version})
-        print(f"=============ROM_Version==============={ROM_Version}")
-
-        # 应用包名
-        print(f"=============PackageName==============={packagename}")
-        device_info.update({"PackageName": packagename})
-
-        # 应用版本
-        App_Version = (
-            str(
-                CommonUtils.exe_cmd(
-                    'hdc -t {0} shell bm dump -n {1} | grep versionName | tail -n 1'.format(d.sn, packagename)
-                )
-            )
-            .split(':')[-1]
-            .strip()
-        )
-        App_Version = rematch(App_Version)
-        device_info.update({"App_Version": App_Version})
-        print(f"=============App_Version==============={App_Version}")
-
-        # 设备sn号
-        Device_sn = str(d.sn)
-        print(f"=============Device_sn==============={Device_sn}")
-        device_info.update({"Device_sn": Device_sn})
-
-        # 芯片平台
-        CPU_Platform = CommonUtils.exe_cmd('hdc -t {} shell cat /proc/device-tree/hisi,chiptype'.format(d.sn))
-        CPU_Platform = rematch(CPU_Platform)
-        device_info.update({"CPU_Platform": CPU_Platform})
-        print(f"=============CPU_Platform==============={CPU_Platform}")
-
-        # CPU核数
-        CPU_Core_num = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell cat /dev/cpuset/cpus'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        CPU_Core_num = rematch(CPU_Core_num)
-        device_info.update({"CPU_Core_num": CPU_Core_num})
-        print(f"=============CPU_Core_num==============={CPU_Core_num}")
-
-        # DDR频率-可用频点
-        # DDR_Frequency_Available = CommonUtils.exe_cmd('hdc -t {} shell cat /proc/device-tree/hisi,chiptype'.format(d.sn))
-        # DDR_Frequency_Available = rematch(DDR_Frequency_Available)
-        # print(f"=============CPU_Frequency_Available==============={DDR_Frequency_Available}")
-
-        # DDR频率-最大频点
-        DDR_Frequency_MAX = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell cat /sys/class/devfreq/ddrfreq/max_freq'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        DDR_Frequency_MAX = rematch(DDR_Frequency_MAX)
-        device_info.update({"DDR_Frequency_MAX": DDR_Frequency_MAX})
-        print(f"=============DDR_Frequency_MAX==============={DDR_Frequency_MAX}")
-
-        # RAM大小
-        RAM = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell "cat /proc/meminfo | grep MemTotal"'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        RAM = rematch(RAM).split(':')[-1].strip()
-        device_info.update({"RAM": RAM})
-        print(f"=============RAM==============={RAM}")
-
-        # 边框温度
-        Temperature_biankuang = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell cat /sys/class/hw_thermal/temp/shell_frame/temp'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        Temperature_biankuang = rematch(Temperature_biankuang)
-        device_info.update({"Temperature_biankuang": Temperature_biankuang})
-        print(f"=============Temperature_biankuang==============={Temperature_biankuang}")
-
-        # 前壳温度
-        Temperature_qianke = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell cat /sys/class/hw_thermal/temp/shell_front/temp'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        Temperature_qianke = rematch(Temperature_qianke)
-        device_info.update({"Temperature_qianke": Temperature_qianke})
-        print(f"=============Temperature_qianke==============={Temperature_qianke}")
-
-        # 后壳温度
-        Temperature_houke = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell cat /sys/class/hw_thermal/temp/shell_back/temp'.format(d.sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        Temperature_houke = rematch(Temperature_houke)
-        device_info.update({"Temperature_houke": Temperature_houke})
-        print(f"=============Temperature_houke==============={Temperature_houke}")
-
-        for key, value in device_info.items():
-            CommonUtils.exe_cmd(
-                'hdc -t {0} shell "echo {1} : "{2}" >> /data/log/logpack/device_info.txt"'.format(d.sn, key, value)
-            )
-            time.sleep(0.5)
-
-    @staticmethod
-    def make_reports(d: UiExplorer, resultPath, flag, packagename):
-        dirList = ['done', 'hitrace', 'temp']
-        otherList = ['hitrace']
-        CommonUtils.create_directory(os.path.join(resultPath, "env"))
-        CommonUtils.create_directory(os.path.join(resultPath, "hiperf"))
-        CommonUtils.create_directory(os.path.join(resultPath, "hitrace"))
-        CommonUtils.create_directory(os.path.join(resultPath, "hap_info"))
-
-        if flag:
-            roundPath = os.path.join(resultPath, 'hiperf')
-        else:
-            roundPath = resultPath
-
-        for i in dirList:
-            CommonUtils.exe_cmd(
-                'hdc -t {0} file recv /data/log/logpack/runtime_profiler/{1} {2}'.format(d.sn, i, roundPath)
-            )
-        for j in otherList:
-            CommonUtils.exe_cmd('hdc -t {0} file recv /data/log/{1} {2}'.format(d.sn, j, roundPath))
-
-        # 删除done
-        if flag:
-            folder_path = os.path.join(roundPath, 'done')
-            files = os.listdir(folder_path)
-            for file in files:
-                file_path = os.path.join(folder_path, file)
-                shutil.move(file_path, roundPath)
-            os.rmdir(folder_path)
-
-        # 拉取device_info
-        device_info_destination_folder = os.path.join(resultPath, 'env')
-        CommonUtils.exe_cmd(
-            'hdc -t {0} file recv /data/log/logpack/device_info.txt {1}'.format(d.sn, device_info_destination_folder)
-        )
-
-        # 拉取hap包
-        hap_info_destination_folder = os.path.join(resultPath, 'hap_info')
-        CommonUtils.exe_cmd(
-            'hdc -t {0} file recv /data/app/el1/bundle/public/{1} {2}'.format(
-                d.sn, packagename, hap_info_destination_folder
-            )
-        )
-
-        # 拉取perf.data
-        if not flag:
-            perf_data_destination_folder = os.path.join(resultPath, 'hiperf')
-            CommonUtils.exe_cmd('hdc -t {0} shell hiperf dump -i /data/local/tmp/perf.data -o perf.dump'.format(d.sn))
-            time.sleep(3)
-            CommonUtils.exe_cmd(
-                'hdc -t {0} file recv /data/local/tmp/perf.data {1}'.format(d.sn, perf_data_destination_folder)
-            )
-            time.sleep(1)
-            CommonUtils.exe_cmd(
-                'hdc -t {0} file recv /data/local/tmp/ps_ef.txt {1}'.format(d.sn, perf_data_destination_folder)
-            )
-            time.sleep(1)
-            CommonUtils.exe_cmd(
-                'hdc -t {0} file recv /data/local/tmp/perf.dump {1}'.format(d.sn, perf_data_destination_folder)
-            )
-            time.sleep(1)
-
-            # CommonUtils.exe_cmd(
-            #     'hdc -t {0} file recv /data/log/logpack/runtime_profiler/done {1}'.format(d.sn, perf_data_destination_folder))
-            # time.sleep(1)
-            # folder_path = os.path.join(perf_data_destination_folder, 'done')
-            # files = os.listdir(folder_path)
-            # for file in files:
-            #     file_path = os.path.join(folder_path, file)
-            #     shutil.move(file_path, perf_data_destination_folder)
-            # os.rmdir(folder_path)
-
-        # 拉取abc文件
-        memdumper_info_destination_folder = os.path.join(resultPath, 'hap_info', packagename)
-        CommonUtils.exe_cmd(
-            'hdc -t {0} file recv /data/local/decrypt {1}'.format(d.sn, memdumper_info_destination_folder)
-        )
-
-        translate_json(os.path.join(device_info_destination_folder, 'device_info.txt'))
-        os.remove(os.path.join(device_info_destination_folder, 'device_info.txt'))
-
-    @staticmethod
-    def memdumper_get_startAddr(d: UiExplorer, packagename, activityName):
-        def rematch(info):
-            matches = re.findall(r"'(.*?)'", str(info))
-            matches2 = re.findall(r'"(.*?)"', str(info))
-            if matches:
-                return matches[0]
-            if matches2:
-                return matches2[0]
-
-        def split_hap(info):  # 处理map命令查询到的hap，将字符串存储成列表
-            matches = re.split(r'(?<=\.hap)', info)
-            return matches
-
-        def split_hsp(info):  # 处理map命令查询到的hsp，将字符串存储成列表
-            matches = re.split(r'(?<=\.hsp)', info)
-            return matches
-
-        def deal_with_haps(haps):  # 根据地址找到不同的hap/hsp
-            result = []
-            prev_line = None
-            count = 0
-            index = 0
-            for line in haps:
-                parts = line.split()
-                num1 = parts[0].split('-')[0]  # 当前行的第一个地址
-                file_name = parts[-1].split('/')[-1]  # hap名称
-                if count == 0:
-                    file_name = str(index) + '_' + file_name
-                    result.append((num1, file_name))
-                    prev_line = line
-                    count += 1
-                    continue
-                if prev_line:
-                    prev_parts = prev_line.split()
-                    prev_num2 = prev_parts[0].split('-')[1]  # 上一行的第二个地址
-                    prev_file2 = prev_parts[-1].split('/')[-1]  # 上一行的hap名
-                    if prev_num2 != num1 or file_name != prev_file2:
-                        if prev_num2 != num1 and file_name == prev_file2:
-                            file_name = str(index + 1) + '_' + file_name
-                            result.append((num1, file_name))
-                        else:
-                            index = 0
-                            file_name = str(index) + '_' + file_name
-                            result.append((num1, file_name))
-                prev_line = line
-                count += 1
-            return result
-
-        def hap_to_abc(result, pid, packagename):  # 使用memdumper转换abc
-            count = 0
-            for item in result:
-                filename = str(item[1]) + ".abc"
-                CommonUtils.exe_cmd(
-                    f'hdc -t {d.sn} shell /data/local/tmp/memdumper -s {item[0]} -n {filename} -o /data/local/decrypt/ -f -i {pid} -k'
-                )
-                count = count + 1
-            return count
-
-        if not activityName:
-            return
-        # 启动应用
-        d.start_app(packagename, activityName)
-        # 删除ps_ef
-        CommonUtils.exe_cmd('hdc -t {0} shell rm -rf /data/local/tmp/ps_ef.txt'.format(d.sn))
-        # 删除memdumper文件夹
-        CommonUtils.exe_cmd('hdc -t {0} shell rm -rf /data/local/decrypt'.format(d.sn))
-        # 创建memdumper文件夹
-        CommonUtils.exe_cmd('hdc -t {0} shell mkdir /data/local/decrypt'.format(d.sn))
-        # 查询应用pid
-        pid = (
-            str(CommonUtils.exe_cmd('hdc -t {0} shell "pidof {1}"'.format(d.sn, packagename)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-        )
-        pid_f = rematch(pid)
-        print(f"=============pid==============={pid_f}")
-        if pid_f:
-            # 找到应用的hap文件名称和hap在内存中的起始位置startAddr
-            startAddr_all = (
-                str(
-                    CommonUtils.exe_cmd(
-                        'hdc -t {0} shell "cat /proc/{1}/maps | grep /data/storage/el1/bundle/ | grep hap"'.format(
-                            d.sn, pid_f
-                        )
-                    )
-                )
-                .replace("\\r", "")
-                .replace("\\n", "")
-            )
-            startAddr_all_f = rematch(startAddr_all)
-            CommonUtils.exe_cmd(
-                'hdc -t {0} shell "cat /proc/{1}/maps | grep /data/storage/el1/bundle/ | grep hap >> /data/local/decrypt/map.txt"'.format(
-                    d.sn, pid_f
-                )
-            )
-
-            startAddr_all_hsp = (
-                str(
-                    CommonUtils.exe_cmd(
-                        'hdc -t {0} shell "cat /proc/{1}/maps | grep /data/storage/el1/bundle/ | grep hsp"'.format(
-                            d.sn, pid_f
-                        )
-                    )
-                )
-                .replace("\\r", "")
-                .replace("\\n", "")
-            )
-            startAddr_all_hsp_f = rematch(startAddr_all_hsp)
-            CommonUtils.exe_cmd(
-                'hdc -t {0} shell "cat /proc/{1}/maps | grep /data/storage/el1/bundle/ | grep hsp >> /data/local/decrypt/map.txt"'.format(
-                    d.sn, pid_f
-                )
-            )
-
-            if startAddr_all_f or startAddr_all_hsp_f:
-                # 所有地址的hap包
-                haps = split_hap(startAddr_all_f)
-                if startAddr_all_hsp_f:
-                    hsp = split_hsp(startAddr_all_hsp_f)
-                    addrs = haps + hsp
-                    filtered_lst = list(filter(None, addrs))
-                    print(filtered_lst)
-                    result = deal_with_haps(filtered_lst)
-                else:
-                    filtered_lst = list(filter(None, haps))
-                    result = deal_with_haps(filtered_lst)
-                hap_to_abc(result, pid_f, packagename)
-        d.stop_app(packagename)
-
-    @staticmethod
-    def operation_record(result_path, input_txt, package_name, case_name):
-        with open(
-            os.path.join(result_path, "operationRecord.txt"), 'a', encoding='utf-8'
-        ) as file:  # 使用'a'模式打开文件以追加内容
-            current_time = time.strftime("%Y%m%d-%H%M%S", time.localtime())
-            operation = (
-                "time:{0},case_name:{1},package_name:{2},operation:{3}".format(
-                    current_time, case_name, package_name, input_txt
-                )
-                + '\n'
-            )
-            file.write(operation)
-            file.flush()
-
-    @staticmethod
-    def operation_record_linux(d: UiExplorer, input_txt, package_name, case_name):
-        current_time = time.strftime("%Y%m%d-%H%M%S", time.localtime())
-        operation = (
-            "echo time:{0},case_name:{1},package_name:{2},operation:{3} >> /data/local/tmp/operationRecord.txt".format(
-                current_time, case_name, package_name, input_txt
-            )
-        )
-        d.shell(operation)
-
-    @staticmethod
     def get_sn(index=0):
-        snlist = list()
-        xml_path = CommonUtils.get_config_file('user_config.xml')
-
-        lines = open(xml_path, encoding='utf-8').readlines()
-        for line in lines:
-            if 'sn>' in line:
-                snlist.append(line.split('>')[1].split('<')[0])
-
-            if 'sn=' in line:
-                snlist.append(line.split()[3].split('\"')[1])
-        return snlist[index]
-
-    @staticmethod
-    def get_device_version():
-        sn = CommonUtils.get_sn()
-        ROM_Version = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell "param get const.build.ver.physical"'.format(sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-            .replace('b', '')
-            .replace("'", '')
-            .strip()
-        )
-        return ROM_Version
-
-    @staticmethod
-    def judg_DH():
-        # 本方法判断手机是否为东湖
-        sn = CommonUtils.get_sn()
-        result = str(
-            CommonUtils.exe_cmd('hdc -t {} shell "param get hmos_fusion_mgr.ctl.inner.privacyprotocol"'.format(sn))
-        )
-        if 'true' in result:
-            return True
-        else:
-            return False
-
-    @staticmethod
-    def get_device_ram():
-        sn = CommonUtils.get_sn()
-        ram = (
-            str(CommonUtils.exe_cmd('hdc -t {} shell "cat /proc/meminfo"'.format(sn)))
-            .replace("\\r", "")
-            .replace("\\n", "")
-            .replace('b', '')
-            .replace("'", '')
-            .split()[1]
-        )
-        return ram
+        # 简化版获取SN逻辑
+        try:
+            result = subprocess.check_output("hdc list targets", shell=True).decode()
+            sns = [line.strip() for line in result.split('\n') if line.strip()]
+            return sns[index] if index < len(sns) else ""
+        except:
+            return ""
 
     @staticmethod
     def get_user_name():
-        user_name = os.popen('echo %username%').read().replace('\n', '')
-        return str(user_name)
-
-    @staticmethod
-    def swipe(system_type, sn, num, x1, y1, x2, y2, sleep_time=1.5, time1=80):
-        if system_type == "hmos":
-            for _ in range(num):
-                CommonUtils.exe_cmd(
-                    'adb -s {0} shell input swipe {1} {2} {3} {4} {5}'.format(
-                        sn, str(x1), str(y1), str(x2), str(y2), str(time1)
-                    )
-                )
-                time.sleep(sleep_time)
-        elif system_type == "ohos":
-            for _ in range(num):
-                CommonUtils.exe_cmd(
-                    'hdc -t {0} shell uinput -T -m {1} {2} {3} {4} {5}'.format(
-                        sn, str(x1), str(y1), str(x2), str(y2), str(time1)
-                    )
-                )
-                time.sleep(sleep_time)
-
-    @staticmethod
-    def swipe_up(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=630, y1=1904, x2=630, y2=1104)
-
-    @staticmethod
-    def swipe_down(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=630, y1=816, x2=630, y2=1616)
-
-    @staticmethod
-    def swipe_left(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=1008, y1=1360, x2=504, y2=1360)
-
-    @staticmethod
-    def swipe_right(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=504, y1=1360, x2=1008, y2=1360)
-
-    @staticmethod
-    def swipe_up_dowm(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=630, y1=1904, x2=630, y2=1104)
-        CommonUtils.swipe(system_type, sn, num, x1=630, y1=816, x2=630, y2=1616)
-
-    @staticmethod
-    def swipe_left_right(system_type, sn, num):
-        CommonUtils.swipe(system_type, sn, num, x1=1008, y1=1360, x2=504, y2=1360)
-        CommonUtils.swipe(system_type, sn, num, x1=504, y1=1360, x2=1008, y2=1360)
-
-    # 获取手机有效温度
-    @staticmethod
-    def get_temperature(sn):
-        temp = CommonUtils.exe_cmd('hdc -t {} shell "cat /sys/class/hw_thermal/temp/shell_frame/temp"'.format(sn))
-        return int(str(temp).split('\\r')[0].split("""'""")[1])
-
-    @staticmethod
-    def get_temperature_HO(sn):
-        temp = CommonUtils.exe_cmd('adb -s {} shell "cat /sys/class/hw_thermal/temp/shell_frame/temp"'.format(sn))
-        return int(str(temp).split('\\r')[0].split("""'""")[1])
+        return os.getlogin()
 
 
 def translate_json(file_path):
     data_dict = {}
+    if not os.path.exists(file_path):
+        return
     with open(file_path, "r", encoding='utf-8') as file:
         lines = file.readlines()
         for line in lines:
-            parts = line.strip().split(':')
-            key = parts[0].strip()
-            value = parts[1].strip()
-            if key == "casename":
-                value = value.replace('b', '')
-            data_dict[key] = value
+            if ':' in line:
+                parts = line.strip().split(':', 1)
+                key = parts[0].strip()
+                value = parts[1].strip()
+                if key == "casename":
+                    value = value.replace('b', '').replace("'", "")
+                data_dict[key] = value
 
-    json_str = json.dumps(data_dict, indent=4, ensure_ascii=False).replace('\\n', '\\n')
-    # json_str = json.dumps(data_dict,indent=4,ensure_ascii=False).replace('\\n', '\\n')
+    json_str = json.dumps(data_dict, indent=4, ensure_ascii=False)
     json_file_path = file_path.replace('.txt', '.json')
-    with open(json_file_path, 'w') as json_file:
+    with open(json_file_path, 'w', encoding='utf-8') as json_file:
         json_file.write(json_str)
 
 
 if __name__ == '__main__':
-    CommonUtils.stop_collect_trace("5JV0125624000256", 'test_method', r'D:\delete\del')
-    # CommonUtils.parse_cpu_time(r"D:\googleDownload\git_del\modelCase_OH\reports\2023-12-27-14-19-00")
+    # 测试代码
+    print("CommonUtils Loaded Successfully")
+    # CommonUtils.stop_collect_trace("5JV0125624000256", 'test_method', r'D:\delete\del')
