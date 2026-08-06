@@ -1,1 +1,12 @@
-python -c "import sys; print(sys.prefix)"
+Program files\Python312\python.exe C:\Program Files\JetBrains\PyCharm 2025.3.5\plugins\python-ce\helpers\packaging_tool.py install --proxy http://50060069:gonglw20240901@@@proxy.huawei.com:8080 pandas
+Looking in indexes: https://mirrors.tools.huawei.com/pypi/simple
+
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 504 Gateway Time-out'))': /pypi/simple/pandas/
+WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 504 Gateway Time-out'))': /pypi/simple/pandas/
+WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 504 Gateway Time-out'))': /pypi/simple/pandas/
+WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 504 Gateway Time-out'))': /pypi/simple/pandas/
+WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 504 Gateway Time-out'))': /pypi/simple/pandas/
+ERROR: Could not find a version that satisfies the requirement pandas (from versions: none)
+ERROR: No matching distribution found for pandas
+
+Process finished with exit code 1
